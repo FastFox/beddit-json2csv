@@ -1,42 +1,182 @@
-import json
+import sys, getopt, json, urllib2
 
-json_file = open('results.json').read()
-json = json.loads(json_file)
+ACCESS_TOKEN = 'becHtgs9r7sw81gr04htyvkU' 
 
-ihr_file = open('ihr.csv', 'w')
-respiration_file = open('respiration.csv', 'w')
-presence_file = open('presence.csv', 'w')
-binary_actigram_file = open('binary_actigram.csv', 'w')
+class Beddit:
+	# result.json from 5.7
+	def results(self):
+		print 'Results'
 
-ihr = 'Timestamp,Instant heart rate value\n'
-respiration = 'Timestamp,Channel,Min,Max,Amplitude\n'
-presence = 'Timestamp, present\n'
-binary_actigram = 'Timestamp\n'
+		# Open input file
+		json_file = open('results.json').read()
+		json_obj = json.loads(json_file)
 
-for item in json['ihr']:
-	ihr += str(item[0]) + ',' + str(item[1]) + '\n'
+		# Make the output files writable
+		ihr_file = open('ihr.csv', 'w')
+		respiration_file = open('respiration.csv', 'w')
+		presence_file = open('presence.csv', 'w')
+		binary_actigram_file = open('binary_actigram.csv', 'w')
 
-for item in json['respiration']:
-	respiration += str(item[0]) + ',' + item[1] + ',' + str(item[2]) + ',' + str(item[3]) + ',' + str(item[4]) + '\n'
+		# Column names
+		ihr = 'Timestamp,Instant heart rate value\n'
+		respiration = 'Timestamp,Channel,Min,Max,Amplitude\n'
+		presence = 'Timestamp, present\n'
+		binary_actigram = 'Timestamp\n'
 
-for item in json['presence']:
-	presence += str(item[0]) + ',' + str(item[1]) + '\n'
+		# Loop for every value for every attribute
+		print 'ihr'
+		for item in json_obj['ihr']:
+			ihr += str(item[0]) + ',' + str(item[1]) + '\n'
 
-for item in json['binary_actigram']:
-	binary_actigram += str(item) + '\n'
+		print 'respiration'
+		for item in json_obj['respiration']:
+			respiration += str(item[0]) + ',' + item[1] + ',' + str(item[2]) + ',' + str(item[3]) + ',' + str(item[4]) + '\n'
 
-ihr_file.write(ihr)
-respiration_file.write(respiration)
-presence_file.write(presence)
-binary_actigram_file.write(binary_actigram)
+		print 'presence'
+		for item in json_obj['presence']:
+			presence += str(item[0]) + ',' + str(item[1]) + '\n'
 
-ihr_file.close()
-respiration_file.close()
-presence_file.close()
-binary_actigram_file.close()
+		print 'binary_actigram'
+		for value in json_obj['binary_actigram']:
+			binary_actigram += str(value) + '\n'
 
-#print json['presence']
-#print json
+		# Write the files
+		ihr_file.write(ihr)
+		respiration_file.write(respiration)
+		presence_file.write(presence)
+		binary_actigram_file.write(binary_actigram)
 
-#print json['respiration']
-#print json['ihr']
+		# Close the files
+		ihr_file.close()
+		respiration_file.close()
+		presence_file.close()
+		binary_actigram_file.close()
+
+	def download_results(self):
+		print 'Download results'
+		results_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/results?access_token=becHtgs9r7sw81gr04htyvkU')
+		results_file = open('results.json', 'w')
+		results_file.write(results_download.read())
+		results_file.close()
+
+	# sleep.json from 5.5
+	def sleep(self):
+		print 'Sleep'
+		
+		json_file = open('sleep.json').read()
+		json_obj = json.loads(json_file)
+	
+		actigram_file = open('minutely_actigram.csv', 'w')
+		noise_file = open('noise.csv', 'w')
+		luminosity_file = open('luminosity.csv', 'w')
+		stages_file = open('stages.csv', 'w')
+
+		actigram = 'Minutely actigram\n'
+		noise = 'Timestamp, Noise\n'
+		luminosity = 'Timestamp, Lux\n'
+		stages = 'Timestamp, stage\n'
+
+		print 'Minutely actigram'
+		for value in json_obj['minutely_actigram']:
+			actigram += str(value) + '\n'
+
+		print 'Noise'
+		for item in json_obj['noise_measurements']:
+			noise += str(item[0]) + ',' + str(item[1]) + '\n'
+
+		print 'Luminosity'
+		for item in json_obj['luminosity_measurements']:
+			luminosity += str(item[0]) + ',' + str(item[1]) + '\n'
+
+		print 'Stages'
+		for item in json_obj['sleep_stages']:
+			stages += str(item[0]) + ','
+			if item[1] == 'M':
+				stages += '0'
+			elif item[1] == 'A':
+				stages += '1'
+			elif item[1] == 'W':
+				stages += '2'
+			elif item[1] == 'L':
+				stages += '3'
+			elif item[1] == 'D':
+				stages += '4'
+
+			stages += '\n'
+
+		actigram_file.write(actigram)
+		noise_file.write(noise)
+		luminosity_file.write(luminosity)
+		stages_file.write(stages)
+
+		actigram_file.close()
+		noise_file.close()
+		luminosity_file.close()
+		stages_file.close()
+
+	def download_sleep(self):
+		print 'Download sleep'
+		sleep_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/sleep?access_token=becHtgs9r7sw81gr04htyvkU')
+		sleep_file = open('sleep.json', 'w')
+		sleep_file.write(sleep_download.read())
+		sleep_file.close()
+
+	# signal.bson from 5.9
+	def signal(self):
+		print 'Signal'
+		"""
+		import bson, numpy
+		data = bson.loads(bson_data)
+		channel_1 = numpy.fromstring(data["channels"]["lo_gain"]["sample_data"], numpy.int16)
+		channel_1
+		"""
+
+	def download_signal(self):
+		print 'Download Signal'
+		signal_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/signal.bson?access_token=becHtgs9r7sw81gr04htyvkU')
+		signal_file = open('signal.bson', 'w')
+		signal_file.write(sleep_download.read())
+		signal_file.close()
+
+
+def main():
+	B = Beddit()
+
+	try:
+		opts, args = getopt.getopt(sys.argv[1:], "rsgd", ["results", "sleep", "signal", "download"])
+	except getopt.GetoptError as err:
+		print str(err)
+		sys.exit(2)
+	
+	results = False
+	sleep = False
+	signal = False
+	download = False
+
+	for o, a in opts:
+		if o == "-d":
+			download = True
+		if o == "-r":
+			results = True
+		if o == "-s":
+			sleep = True
+		if o == "-g":
+			signal = True
+
+	if results:
+		if download:
+			B.download_results()
+		B.results()
+	
+	if sleep:
+		if download:
+			B.download_sleep()
+		B.sleep()
+
+	if signal:
+		if download:
+			B.download_signal()
+		B.signal()
+
+if __name__ == "__main__":
+	main()
