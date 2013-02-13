@@ -1,4 +1,4 @@
-import sys, getopt, json, urllib2
+import sys, getopt, json, urllib2, datetime
 
 ACCESS_TOKEN = 'becHtgs9r7sw81gr04htyvkU' 
 
@@ -18,27 +18,29 @@ class Beddit:
 		binary_actigram_file = open('binary_actigram.csv', 'w')
 
 		# Column names
-		ihr = 'Timestamp,Instant heart rate value\n'
-		respiration = 'Timestamp,Channel,Min,Max,Amplitude\n'
-		presence = 'Timestamp, present\n'
+		ihr = 'Timestamp,Datetime,Instant heart rate value\n'
+		respiration = 'Timestamp,Datetime,Channel,Min,Max,Amplitude\n'
+		presence = 'Timestamp,Datetime,present\n'
 		binary_actigram = 'Timestamp\n'
+
+		interval_start = datetime.datetime.strptime( json_obj['interval_start'], "%Y-%m-%dT%H:%M:%S" )
 
 		# Loop for every value for every attribute
 		print 'ihr'
 		for item in json_obj['ihr']:
-			ihr += str(item[0]) + ',' + str(item[1]) + '\n'
+			ihr += str(item[0]) + ',' + str(interval_start + datetime.timedelta(0, item[0])) + ',' + str(item[1]) + '\n'
 
 		print 'respiration'
 		for item in json_obj['respiration']:
-			respiration += str(item[0]) + ',' + item[1] + ',' + str(item[2]) + ',' + str(item[3]) + ',' + str(item[4]) + '\n'
+			respiration += str(item[0]) + ',' + str(interval_start + datetime.timedelta(0, item[0])) + ',' + item[1] + ',' + str(item[2]) + ',' + str(item[3]) + ',' + str(item[4]) + '\n'
 
 		print 'presence'
 		for item in json_obj['presence']:
-			presence += str(item[0]) + ',' + str(item[1]) + '\n'
+			presence += str(item[0]) + ',' + str(interval_start + datetime.timedelta(0, item[0])) + ',' + str(item[1]) + '\n'
 
 		print 'binary_actigram'
 		for value in json_obj['binary_actigram']:
-			binary_actigram += str(value) + '\n'
+			binary_actigram += str(value) + ',' + str(interval_start + datetime.timedelta(0, item[0])) + '\n'
 
 		# Write the files
 		ihr_file.write(ihr)
@@ -54,7 +56,7 @@ class Beddit:
 
 	def download_results(self):
 		print 'Download results'
-		results_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/results?access_token=becHtgs9r7sw81gr04htyvkU')
+		results_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/results?access_token=' + ACCESS_TOKEN)
 		results_file = open('results.json', 'w')
 		results_file.write(results_download.read())
 		results_file.close()
@@ -71,14 +73,17 @@ class Beddit:
 		luminosity_file = open('luminosity.csv', 'w')
 		stages_file = open('stages.csv', 'w')
 
-		actigram = 'Minutely actigram\n'
-		noise = 'Timestamp, Noise\n'
-		luminosity = 'Timestamp, Lux\n'
-		stages = 'Timestamp, stage\n'
+		actigram = 'Datetime,Minutely actigram\n'
+		noise = 'Datetime,Noise\n'
+		luminosity = 'Datetime,Lux\n'
+		stages = 'Datetime,Stage\n'
+
+		interval_start = datetime.datetime.strptime( json_obj['local_start_time'], "%Y-%m-%dT%H:%M:%S" )
 
 		print 'Minutely actigram'
-		for value in json_obj['minutely_actigram']:
-			actigram += str(value) + '\n'
+		for index, value in enumerate(json_obj['minutely_actigram']):
+			actigram += str(interval_start + datetime.timedelta(0, index * 60)) +',' + str(value) + '\n'
+
 
 		print 'Noise'
 		for item in json_obj['noise_measurements']:
@@ -116,7 +121,7 @@ class Beddit:
 
 	def download_sleep(self):
 		print 'Download sleep'
-		sleep_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/sleep?access_token=becHtgs9r7sw81gr04htyvkU')
+		sleep_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/sleep?access_token=' + ACCESS_TOKEN)
 		sleep_file = open('sleep.json', 'w')
 		sleep_file.write(sleep_download.read())
 		sleep_file.close()
@@ -133,7 +138,7 @@ class Beddit:
 
 	def download_signal(self):
 		print 'Download Signal'
-		signal_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/signal.bson?access_token=becHtgs9r7sw81gr04htyvkU')
+		signal_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/signal.bson?access_token=' + ACCESS_TOKEN)
 		signal_file = open('signal.bson', 'w')
 		signal_file.write(sleep_download.read())
 		signal_file.close()
