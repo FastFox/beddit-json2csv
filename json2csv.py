@@ -74,7 +74,7 @@ class Beddit:
 		stages_file = open('stages.csv', 'w')
 
 		actigram = 'Datetime,Minutely actigram\n'
-		noise = 'Datetime,Noise\n'
+		noise = 'Datetime,dB\n'
 		luminosity = 'Datetime,Lux\n'
 		stages = 'Datetime,Stage\n'
 
@@ -86,11 +86,11 @@ class Beddit:
 
 
 		print 'Noise'
-		for item in json_obj['noise_measurements']:
+		for item in json_obj['noise_measurements'][0]:
 			noise += str(item[0]) + ',' + str(item[1]) + '\n'
 
 		print 'Luminosity'
-		for item in json_obj['luminosity_measurements']:
+		for item in json_obj['luminosity_measurements'][0]:
 			luminosity += str(item[0]) + ',' + str(item[1]) + '\n'
 
 		print 'Stages'
