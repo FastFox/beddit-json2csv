@@ -1,6 +1,7 @@
 import sys, getopt, json, urllib2, datetime
+import settings
 
-ACCESS_TOKEN = 'becHtgs9r7sw81gr04htyvkU' 
+#ACCESS_TOKEN = 'becHtgs9r7sw81gr04htyvkU' 
 
 class Beddit:
 	# result.json from 5.7
@@ -56,7 +57,7 @@ class Beddit:
 
 	def download_results(self):
 		print 'Download results'
-		results_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/results?access_token=' + ACCESS_TOKEN)
+		results_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/results?access_token=' + settings.ACCESS_TOKEN)
 		results_file = open('results.json', 'w')
 		results_file.write(results_download.read())
 		results_file.close()
@@ -121,7 +122,7 @@ class Beddit:
 
 	def download_sleep(self):
 		print 'Download sleep'
-		sleep_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/sleep?access_token=' + ACCESS_TOKEN)
+		sleep_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/sleep?access_token=' + settings.ACCESS_TOKEN)
 		sleep_file = open('sleep.json', 'w')
 		sleep_file.write(sleep_download.read())
 		sleep_file.close()
@@ -138,7 +139,7 @@ class Beddit:
 
 	def download_signal(self):
 		print 'Download Signal'
-		signal_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/signal.bson?access_token=' + ACCESS_TOKEN)
+		signal_download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/signal.bson?access_token=' + settings.ACCESS_TOKEN)
 		signal_file = open('signal.bson', 'w')
 		signal_file.write(sleep_download.read())
 		signal_file.close()
