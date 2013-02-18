@@ -58,7 +58,7 @@ class Beddit:
 
 	def download_results(self):
 		print 'Download results'
-		download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/results?access_token=' + settings.ACCESS_TOKEN)
+		download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/2013/01/26/results?access_token=' + settings.ACCESS_TOKEN)
 		file = open('results.json', 'w')
 		file.write(results_download.read())
 		file.close()
@@ -123,7 +123,7 @@ class Beddit:
 
 	def download_sleep(self):
 		print 'Download sleep'
-		download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/sleep?access_token=' + settings.ACCESS_TOKEN)
+		download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/2013/01/26/sleep?access_token=' + settings.ACCESS_TOKEN)
 		file = open('sleep.json', 'w')
 		file.write(sleep_download.read())
 		file.close()
@@ -140,21 +140,26 @@ class Beddit:
 
 	def download_signal(self):
 		print 'Download Signal'
-		download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/2013/01/26/signal.bson?access_token=' + settings.ACCESS_TOKEN)
+		download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/2013/01/26/signal.bson?access_token=' + settings.ACCESS_TOKEN)
 		file = open('signal.bson', 'w')
 		file.write(sleep_download.read())
 		file.close()
 
+	# Timelien from 5.4
 	def timeline(self):
 		print 'Timeline'
+
+		start = "2013-01-19"
+		end = "2013-01-27"
+
 		json_file = open('timeline.json').read()
 		json_obj = json.loads(json_file)
 		json_obj = sorted(json_obj, key=itemgetter('date'))
 
-		timeline = "Date,Time in bed,Time sleeping,Time light sleep,Time deep sleep,resting heartrate,sleep_efficiency\n"
+		timeline = "Date,Time in bed,Time sleeping,Time light sleep,Time deep sleep,Resting heartrate,Sleep efficiency,Stress\n"
 
 		for day in json_obj:
-			timeline += str(day["date"]) + "," + str(day["time_in_bed"]) + "," + str(day["time_sleeping"]) + "," + str(day["time_light_sleep"]) + "," + str(day["time_deep_sleep"]) + "," + str(day["resting_heartrate"]) + "," + str(day["sleep_efficiency"]) + "\n"
+			timeline += str(day["date"]) + "," + str(day["time_in_bed"]) + "," + str(day["time_sleeping"]) + "," + str(day["time_light_sleep"]) + "," + str(day["time_deep_sleep"]) + "," + str(day["resting_heartrate"]) + "," + str(day["sleep_efficiency"]) + "," + str(day["stress_percent"]) + "\n"
 
 		file = open('timeline.csv', 'w')
 		file.write(timeline)
@@ -162,7 +167,7 @@ class Beddit:
 
 	def download_timeline(self):
 		print 'Download timeline'
-		download = urllib2.urlopen('https://api.beddit.com/api2/user/liacs2/timeline?start=2013-01-19&end=2013-01-27&access_token=' + settings.ACCESS_TOKEN)
+		download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/timeline?start=' + start + '&end=' + end + '&access_token=' + settings.ACCESS_TOKEN)
 		file = open('timeline.json', 'w')
 		file.write(download.read())
 		file.close()
