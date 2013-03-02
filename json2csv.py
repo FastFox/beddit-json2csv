@@ -4,8 +4,35 @@ from operator import itemgetter, attrgetter
 
 #ACCESS_TOKEN = 'becHtgs9r7sw81gr04htyvkU' 
 
-class Beddit:
+class Beddit():
 	# result.json from 5.7
+	class Help():
+			def avgResp(self):
+				print 'avg resp'
+				file = open('results.json').read()
+				obj = json.loads(file)
+				respAmpCount = 0
+				respAmp = 0
+				
+				ihrCount = 0
+				ihr = 0
+
+				for item in obj['respiration']:
+					respAmp += item[4];
+					respAmpCount += 1
+
+				for item in obj['ihr']:
+					ihr += item[1]
+					ihrCount += 1
+
+
+				#print count, total
+				print obj
+				return respAmp / count
+
+	def __init__(self):
+		self.Help = self.Help()
+	
 	def results(self):
 		print 'Results'
 
@@ -58,7 +85,9 @@ class Beddit:
 
 	def download_results(self):
 		print 'Download results'
-		download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/2013/01/26/results?access_token=' + settings.ACCESS_TOKEN)
+		date = '2013/01/26'
+
+		download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/' + date + '/results?access_token=' + settings.ACCESS_TOKEN)
 		file = open('results.json', 'w')
 		file.write(results_download.read())
 		file.close()
@@ -108,6 +137,8 @@ class Beddit:
 				stages += '3'
 			elif item[1] == 'D':
 				stages += '4'
+			else:
+				stages += '-1'
 
 			stages += '\n'
 
@@ -122,11 +153,25 @@ class Beddit:
 		stages_file.close()
 
 	def download_sleep(self):
+		date = '2013/01/06'
+
 		print 'Download sleep'
-		download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/2013/01/26/sleep?access_token=' + settings.ACCESS_TOKEN)
+		download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/' + date + '/sleep?access_token=' + settings.ACCESS_TOKEN)
 		file = open('sleep.json', 'w')
 		file.write(sleep_download.read())
 		file.close()
+
+	def extend_timeline(self):
+		print 'Extend timeline'
+		with open('timeline.csv', 'r') as file:
+			data = file.readlines()
+			
+		data[0] = data[0][0:-2] + ',average respiration amplitude\n'
+		#length = len(data) - 1
+		print	self.Help.avgResp()
+		with open('timeline_extended.csv', 'w') as file:
+			file.writelines(data)
+
 
 	# signal.bson from 5.9
 	def signal(self):
@@ -145,7 +190,7 @@ class Beddit:
 		file.write(sleep_download.read())
 		file.close()
 
-	# Timelien from 5.4
+	# Timeline from 5.4
 	def timeline(self):
 		print 'Timeline'
 
@@ -172,11 +217,12 @@ class Beddit:
 		file.write(download.read())
 		file.close()
 
+
 def main():
 	B = Beddit()
 
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], "rsgtd", ["results", "sleep", "signal", "timeline", "download"])
+		opts, args = getopt.getopt(sys.argv[1:], "rsgted", ["results", "sleep", "signal", "timeline", "download", "extend"])
 	except getopt.GetoptError as err:
 		print str(err)
 		sys.exit(2)
@@ -185,6 +231,7 @@ def main():
 	sleep = False
 	signal = False
 	timeline = False
+	extend = False
 	download = False
 
 	for o, a in opts:
@@ -198,6 +245,8 @@ def main():
 			signal = True
 		if o == "-t":
 			timeline = True
+		if o == "-e":
+			extend = True
 
 	if results:
 		if download:
@@ -218,6 +267,9 @@ def main():
 		if download:
 			B.download_timeline()
 		B.timeline()
+
+	if extend:
+		B.extend_timeline()
 
 if __name__ == "__main__":
 	main()
