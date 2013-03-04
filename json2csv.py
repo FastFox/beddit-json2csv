@@ -35,7 +35,7 @@ class Beddit():
 			if download:
 				self.download()
 
-			data[0] = data[0][0:-1] + ',average respiration amplitude,average ihr\n'
+			data[0] = data[0][0:-1] + ',average respiration amplitude,average ihr, average noise, average lux\n'
 
 			i = 0
 			for day in self.timeline:
@@ -43,7 +43,7 @@ class Beddit():
 				file = open('results-' + day['date'] + '.json').read()
 				results = json.loads(file)
 
-				# calculate avg
+				# calculate avg (Summated divided by number of timestamps, so not completely average)
 				respAmpCount = 0
 				respAmp = 0
 				
@@ -58,8 +58,29 @@ class Beddit():
 					ihr += item[1]
 					ihrCount += 1
 
+				# sleep
+				file = open('sleep-' + day['date'] + '.json').read()
+				sleep = json.loads(file)
+				noise = 0
+				noiseCount = 0
+				
+				for item in sleep['noise_measurements'][0]:
+					noise += item[1]
+					noiseCount += 1
+
+				lum = 0
+				lumCount = 0
+				for item in sleep['luminosity_measurements'][0]:
+					print item[1]
+					lum += item[1]
+					lumCount += 1
+				print 'average', str(lum / lumCount)
+	
 				# extend csv file with extra columns
-				data[i] = data[i][0:-1] + ',' + str(respAmp / respAmpCount) + ',' + str(ihr / ihrCount) + '\n'
+				data[i] = data[i][0:-1] + ',' + str(respAmp / respAmpCount) + ',' + str(ihr / ihrCount) + ',' + str(noise / noiseCount) + ',' + str(lum / lumCount) + '\n'
+
+
+				# sleep.json
 
 	
 			# write data
@@ -72,6 +93,12 @@ class Beddit():
 				file = open('results-' + day['date'] + '.json', 'w')
 				file.write(download.read())
 				file.close()
+				
+				download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/' + day['date'].replace('-', '/') + '/sleep?access_token=' + settings.ACCESS_TOKEN)
+				file = open('sleep-' + day['date'] + '.json', 'w')
+				file.write(download.read())
+				file.close()
+
 	
 	def __init__(self):
 		self.Help = self.Help()
@@ -112,7 +139,7 @@ class Beddit():
 
 		print 'binary_actigram'
 		for value in json_obj['binary_actigram']:
-			binary_actigram += str(value) + ',' + str(interval_start + datetime.timedelta(0, item[0])) + '\n'
+			binary_actigram += str(value) + ',' + str(interval_start + datetime.timedelta(0, value)) + '\n'
 
 		# Write the files
 		ihr_file.write(ihr)
