@@ -5,31 +5,74 @@ from operator import itemgetter, attrgetter
 #ACCESS_TOKEN = 'becHtgs9r7sw81gr04htyvkU' 
 
 class Beddit():
+	
 	# result.json from 5.7
 	class Help():
-			def avgResp(self):
+			def avg(self):
 				print 'avg resp'
 				file = open('results.json').read()
 				obj = json.loads(file)
+
+
+
+				#print count, total
+				#print obj
+				#return respAmpI / respAmpCount
+
+	class Extend():
+		timeline = None
+		def __init__(self, download):
+			#print self.avgResp()
+			#print self.avgIhr()
+			json_file = open('timeline.json').read()
+			self.timeline = json.loads(json_file)
+			self.timeline = sorted(self.timeline, key=itemgetter('date'))
+
+			csv = open('timeline.csv', 'r')
+			extended_csv = open('timeline_extended.csv', 'w')
+			data = csv.readlines()
+
+			if download:
+				self.download()
+
+			data[0] = data[0][0:-1] + ',average respiration amplitude,average ihr\n'
+
+			i = 0
+			for day in self.timeline:
+				i += 1
+				file = open('results-' + day['date'] + '.json').read()
+				results = json.loads(file)
+
+				# calculate avg
 				respAmpCount = 0
 				respAmp = 0
 				
 				ihrCount = 0
 				ihr = 0
 
-				for item in obj['respiration']:
-					respAmp += item[4];
+				for item in results['respiration']:
+					respAmp += item[4]
 					respAmpCount += 1
-
-				for item in obj['ihr']:
+				
+				for item in results['ihr']:
 					ihr += item[1]
 					ihrCount += 1
 
+				# extend csv file with extra columns
+				data[i] = data[i][0:-1] + ',' + str(respAmp / respAmpCount) + ',' + str(ihr / ihrCount) + '\n'
 
-				#print count, total
-				print obj
-				return respAmp / count
+	
+			# write data
+			extended_csv.writelines(data)
 
+		def download(self):
+			for day in self.timeline:
+				print 'Downloading results of ' + day['date']		
+				download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/' + day['date'].replace('-', '/') + '/results?access_token=' + settings.ACCESS_TOKEN)
+				file = open('results-' + day['date'] + '.json', 'w')
+				file.write(download.read())
+				file.close()
+	
 	def __init__(self):
 		self.Help = self.Help()
 	
@@ -86,10 +129,18 @@ class Beddit():
 	def download_results(self):
 		print 'Download results'
 		date = '2013/01/26'
-
+		self.download_results(date)
+		"""
 		download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/' + date + '/results?access_token=' + settings.ACCESS_TOKEN)
 		file = open('results.json', 'w')
-		file.write(results_download.read())
+		file.write(download.read())
+		file.close()
+		"""
+
+	def download_results(self, date):
+		download = urllib2.urlopen('https://api.beddit.com/api2/user/' + settings.USERNAME + '/' + date.replace('-', '/') + '/results?access_token=' + settings.ACCESS_TOKEN)
+		file = open('results-' + date + '.json', 'w')
+		file.write(download.read())
 		file.close()
 
 	# sleep.json from 5.5
@@ -163,14 +214,15 @@ class Beddit():
 
 	def extend_timeline(self):
 		print 'Extend timeline'
-		with open('timeline.csv', 'r') as file:
-			data = file.readlines()
+		#with open('timeline.csv', 'r') as file:
+			#data = file.readlines()
 			
-		data[0] = data[0][0:-2] + ',average respiration amplitude\n'
+		#data[0] = data[0][0:-2] + ',average respiration amplitude\n'
 		#length = len(data) - 1
-		print	self.Help.avgResp()
-		with open('timeline_extended.csv', 'w') as file:
-			file.writelines(data)
+		#print	self.Help.avgResp()
+		#with open('timeline_extended.csv', 'w') as file:
+			#file.writelines(data)
+
 
 
 	# signal.bson from 5.9
@@ -200,6 +252,7 @@ class Beddit():
 		json_file = open('timeline.json').read()
 		json_obj = json.loads(json_file)
 		json_obj = sorted(json_obj, key=itemgetter('date'))
+		#self.timeline = json_obj
 
 		timeline = "Date,Time in bed,Time sleeping,Time light sleep,Time deep sleep,Resting heartrate,Sleep efficiency,Stress\n"
 
@@ -269,7 +322,8 @@ def main():
 		B.timeline()
 
 	if extend:
-		B.extend_timeline()
+		#B.extend_timeline()
+		B.Extend(download)
 
 if __name__ == "__main__":
 	main()
